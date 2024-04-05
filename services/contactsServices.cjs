@@ -41,12 +41,12 @@ async function refreshContact(contactId, data) {
 	const array = await listContacts();
 	const contact = await getContactById(contactId);
 	const index = array.findIndex((arr) => arr.id === contactId);
-	contact.name = data.name == undefined ? contact.name : data.name;
-	contact.phone = data.phone == undefined ? contact.phone : data.phone;
-	contact.email = data.email == undefined ? contact.email : data.email;
-	if (index === -1) {
+	if (index === -1 || contact === null) {
 		return null;
 	} else {
+		contact.name = data.name == undefined ? contact.name : data.name;
+		contact.phone = data.phone == undefined ? contact.phone : data.phone;
+		contact.email = data.email == undefined ? contact.email : data.email;
 		array[index] = contact;
 		fs.writeFile(contactsPath, JSON.stringify(array));
 		return array[index] || null;
