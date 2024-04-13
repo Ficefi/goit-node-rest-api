@@ -13,7 +13,7 @@ const getAllContacts = async (req, res, next) => {
 const getOneContact = async (req, res, next) => {
 	try {
 		const { id } = req.params;
-		const result = await getContactById(id);
+		const result = await Contact.findById(id);
 		if (result == null) {
 			throw HttpError(404, "Not Found");
 		}
@@ -26,7 +26,7 @@ const getOneContact = async (req, res, next) => {
 const deleteContact = async (req, res, next) => {
 	try {
 		const { id } = req.params;
-		const result = await removeContact(id);
+		const result = await Contact.findByIdAndDelete(id);
 		if (result == null) {
 			throw HttpError(404, "Not Found");
 		}
@@ -38,8 +38,7 @@ const deleteContact = async (req, res, next) => {
 
 const createContact = async (req, res, next) => {
 	try {
-		const { name, email, phone } = req.body;
-		const result = await addContact(name, email, phone);
+		const result = await Contact.create(req.body);
 		res.status(201).json(result);
 	} catch (error) {
 		next(error);
@@ -49,8 +48,22 @@ const createContact = async (req, res, next) => {
 const updateContact = async (req, res, next) => {
 	try {
 		const { id } = req.params;
-		const { name, email, phone } = req.body;
-		const result = await refreshContact(id, { name, email, phone });
+		await Contact.findByIdAndUpdate(id, req.body);
+		const result = await Contact.findById(id);
+		if (result == null) {
+			throw HttpError(404, "Not Found");
+		}
+		res.status(200).json(result);
+	} catch (error) {
+		next(error);
+	}
+};
+
+const updateStatusContact = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		await Contact.findByIdAndUpdate(id, req.body, { new: true });
+		const result = await Contact.findById(id);
 		if (result == null) {
 			throw HttpError(404, "Not Found");
 		}
@@ -66,4 +79,5 @@ module.exports = {
 	deleteContact,
 	createContact,
 	updateContact,
+	updateStatusContact,
 };

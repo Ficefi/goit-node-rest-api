@@ -14,12 +14,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT;
 const uriDb = process.env.DB_HOST;
-// const connection = mongoose.connect(uriDb, {
-// 	promiseLibrary: global.Promise,
-// 	useCreateIndex: true,
-// 	useUnifiedTopology: true,
-// 	useFindAndModify: false,
-// });
+const connection = mongoose.connect(uriDb);
 
 app.use("/api/contacts", contactsRouter);
 
@@ -32,8 +27,7 @@ app.use((err, req, res, next) => {
 	res.status(status).json({ message });
 });
 
-mongoose
-	.connect(uriDb)
+connection
 	.then(() => {
 		app.listen(PORT, () => {
 			console.log("Database connection successful");
