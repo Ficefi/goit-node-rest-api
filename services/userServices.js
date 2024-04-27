@@ -27,9 +27,8 @@ const createUser = async (userData) => {
 	const newUser = new User(userData);
 	await newUser.hashPasswords();
 	await newUser.save();
-	const userWithToken = await updateUserWithToken(newUser.id);
 
-	return userWithToken;
+	return newUser;
 };
 
 const validatePassword = async (password, hash) => {

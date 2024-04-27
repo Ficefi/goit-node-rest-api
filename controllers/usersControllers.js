@@ -1,6 +1,5 @@
 const HttpError = require("../helpers/HttpError.js");
 const func = require("../services/userServices.js");
-const { createJWT } = require("../helpers/isValidJWT");
 
 const userSignUp = async (req, res, next) => {
 	const { name, email, password } = req.body;
@@ -17,7 +16,6 @@ const userSignUp = async (req, res, next) => {
 				name,
 				email,
 			},
-			token: createdUser.token,
 		});
 	} catch (error) {
 		next(error);
