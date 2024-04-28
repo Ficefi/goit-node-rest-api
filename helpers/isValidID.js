@@ -8,4 +8,5 @@ const isValId = (req, res, next) => {
 	}
 	next();
 };
-module.exports = isValId;
+
+module.exports = { isValId };

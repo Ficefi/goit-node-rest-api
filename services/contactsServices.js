@@ -7,12 +7,12 @@ async function listContacts(filter, options) {
 }
 
 async function getContactById(filter) {
-	const result = await Contact.findById(filter);
+	const result = await Contact.findOne(filter);
 	return result;
 }
 
 async function removeContact(filter) {
-	const result = await Contact.findByIdAndDelete(filter);
+	const result = await Contact.findOneAndDelete(filter);
 	return result;
 }
 
@@ -22,13 +22,13 @@ async function addContact(user, owner) {
 }
 
 async function refreshContact(filter, data) {
-	const result = await Contact.findByIdAndUpdate(filter, { ...data }, { new: true });
+	const result = await Contact.findOneAndUpdate(filter, { ...data }, { new: true });
 	return result;
 }
 
 async function favoriteContact(filter, data) {
-	await Contact.findByIdAndUpdate(filter, { ...data }, { new: true });
-	const result = await Contact.findById(filter._id);
+	await Contact.findOneAndUpdate(filter, { ...data }, { new: true });
+	const result = await Contact.findOne(filter._id);
 	return result;
 }
 

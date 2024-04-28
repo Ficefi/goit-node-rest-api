@@ -1,6 +1,5 @@
 const HttpError = require("../helpers/HttpError.js");
 const func = require("../services/userServices.js");
-const { createJWT } = require("../helpers/isValidJWT");
 
 const userSignUp = async (req, res, next) => {
 	const { name, email, password } = req.body;
@@ -11,13 +10,13 @@ const userSignUp = async (req, res, next) => {
 		}
 
 		const createdUser = await func.createUser({ name, email, password });
+		const { subscription } = createdUser;
 
 		res.status(201).json({
 			user: {
-				name,
 				email,
+				subscription,
 			},
-			token: createdUser.token,
 		});
 	} catch (error) {
 		next(error);
@@ -28,15 +27,15 @@ const userLogin = async (req, res, next) => {
 	const { email, password } = req.body;
 	try {
 		const user = await func.findUserByEmail(email);
-		const { subscription } = user;
 		if (!user) {
-			throw HttpError(401, "Your email doesn`t exist");
+			throw HttpError(401, "Email or password is wrong");
 		}
 		const isValidPassword = await func.validatePassword(password, user.password);
 		if (!isValidPassword) {
-			throw HttpError(401, "Your password is incorrect");
+			throw HttpError(401, "Email or password is wrong");
 		}
 
+		const { subscription } = user;
 		const newUser = await func.updateUserWithToken(user.id);
 
 		res.status(200).json({
