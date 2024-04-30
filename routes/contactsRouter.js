@@ -15,22 +15,27 @@ const {
 } = require("../schemas/contactsSchemas.js");
 const { isValId } = require("../middlewares");
 
+const { auth } = require("../helpers/auth.js");
+const { isValId } = require("../helpers/isValidID.js");
+
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", auth, getAllContacts);
 
-contactsRouter.get("/:id", isValId, getOneContact);
+contactsRouter.get("/:id", auth, isValId, getOneContact);
 
-contactsRouter.delete("/:id", isValId, deleteContact);
+contactsRouter.delete("/:id", auth, isValId, deleteContact);
 
-contactsRouter.post("/", validateBody(createContactSchema), createContact);
+contactsRouter.post("/", validateBody(createContactSchema), auth, createContact);
 
-contactsRouter.put("/:id", isValId, validateBody(updateContactSchema), updateContact);
+contactsRouter.put("/:id", validateBody(updateContactSchema), auth, isValId, updateContact);
 
 contactsRouter.patch(
 	"/:id/favorite",
-	isValId,
 	validateBody(updateFavoriteSchema),
+	auth,
+	isValId,
+  
 	updateStatusContact
 );
 

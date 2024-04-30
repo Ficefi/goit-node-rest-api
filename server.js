@@ -1,30 +1,19 @@
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-
+const { connectDB } = require("./db/connection.js");
+const { app } = require("./app.js");
 require("dotenv").config();
 
-const app = express();
+const { PORT } = process.env;
 
-app.use(express.json());
-app.use(cors());
+const startServer = async () => {
+	try {
+		await connectDB();
 
-const PORT = process.env.PORT || 3000;
-const uriDb = process.env.DB_HOST;
-const connection = mongoose.connect(uriDb, {
-	promiseLibrary: global.Promise,
-	useCreateIndex: true,
-	useUnifiedTopology: true,
-	useFindAndModify: false,
-});
-
-connection
-	.then(() => {
-		app.listen(PORT, function () {
-			console.log(`Server running. Use our API on port: ${PORT}`);
+		app.listen(PORT, () => {
+			console.log(`DB is connected`);
 		});
-	})
-	.catch((err) => {
-		console.log(`Server not running. Error message: ${err.message}`);
-		process.exit(1);
-	});
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+startServer();
