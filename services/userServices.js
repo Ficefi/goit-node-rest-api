@@ -37,10 +37,15 @@ const validatePassword = async (password, hash) => {
 	return valid;
 };
 
+const updateUserAvatar = async (id, newAvatar) => {
+	return User.findByIdAndUpdate(id, { avatarURL: newAvatar }, { new: true });
+};
+
 module.exports = {
 	findUserByEmail,
 	createUser,
 	updateUserWithToken,
 	validatePassword,
 	findUserByToken,
+	updateUserAvatar,
 };
