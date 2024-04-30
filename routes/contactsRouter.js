@@ -13,6 +13,7 @@ const {
 	updateContactSchema,
 	updateFavoriteSchema,
 } = require("../schemas/contactsSchemas.js");
+const { isValId } = require("../middlewares");
 
 const { auth } = require("../helpers/auth.js");
 const { isValId } = require("../helpers/isValidID.js");
@@ -34,6 +35,7 @@ contactsRouter.patch(
 	validateBody(updateFavoriteSchema),
 	auth,
 	isValId,
+  
 	updateStatusContact
 );
 
