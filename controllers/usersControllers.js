@@ -1,5 +1,9 @@
 const HttpError = require("../helpers/HttpError.js");
 const func = require("../services/userServices.js");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs").promises;
+const { changeSize } = require("../helpers/changeImageSize.js");
 
 const userSignUp = async (req, res, next) => {
 	const { name, email, password } = req.body;
@@ -9,7 +13,9 @@ const userSignUp = async (req, res, next) => {
 			throw HttpError(409, "Similar email already exists");
 		}
 
-		const createdUser = await func.createUser({ name, email, password });
+		const avatarURL = gravatar.url(email, null, false);
+
+		const createdUser = await func.createUser({ name, email, password, avatarURL });
 		const { subscription } = createdUser;
 
 		res.status(201).json({
@@ -83,9 +89,35 @@ const userCurrent = async (req, res, next) => {
 	}
 };
 
+const userAvatar = async (req, res, next) => {
+	const { id } = req.user;
+	const avatarsDir = path.resolve("public", "avatars");
+
+	try {
+		if (!req.file) {
+			throw HttpError(404, "Not Found");
+		}
+
+		const { path: tempUpload, originalname } = req.file;
+		const filename = `${id}_${originalname}`;
+		const result = path.resolve(avatarsDir, filename);
+		await fs.rename(tempUpload, result);
+
+		const updatedUrl = path.join("avatars", filename);
+		const updatedUser = await func.updateUserAvatar(id, updatedUrl);
+
+		await changeSize(result);
+
+		res.status(200).json({ avatarURL: updatedUser.avatarURL });
+	} catch (error) {
+		next(error);
+	}
+};
+
 module.exports = {
 	userSignUp,
 	userLogin,
 	userCurrent,
 	userLogout,
+	userAvatar,
 };
