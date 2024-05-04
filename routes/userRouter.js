@@ -5,6 +5,8 @@ const {
 	userLogout,
 	userCurrent,
 	userAvatar,
+	userVerification,
+	resendVerification,
 } = require("../controllers/usersControllers.js");
 const { createUserSchema, loginUserSchema } = require("../schemas/userSchemas.js");
 const validateBody = require("../helpers/validateBody.js");
@@ -19,7 +21,11 @@ userRouter.post("/login", validateBody(loginUserSchema), userLogin);
 
 userRouter.post("/logout", auth, userLogout);
 
+userRouter.post("/verify", resendVerification);
+
 userRouter.get("/current", auth, userCurrent);
+
+userRouter.get("/verify/:verificationToken", userVerification);
 
 userRouter.patch("/avatars", auth, upload.single("avatar"), userAvatar);
 

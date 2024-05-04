@@ -3,6 +3,8 @@ const func = require("../services/userServices.js");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs").promises;
+const { sendMail } = require("../helpers/sendMail.js");
+const { v4 } = require("uuid");
 const { changeSize } = require("../helpers/changeImageSize.js");
 
 const userSignUp = async (req, res, next) => {
@@ -15,8 +17,18 @@ const userSignUp = async (req, res, next) => {
 
 		const avatarURL = gravatar.url(email, null, false);
 
-		const createdUser = await func.createUser({ name, email, password, avatarURL });
+		const verificationToken = v4();
+
+		const createdUser = await func.createUser({
+			name,
+			email,
+			password,
+			avatarURL,
+			verificationToken,
+		});
 		const { subscription } = createdUser;
+
+		sendMail(email, verificationToken);
 
 		res.status(201).json({
 			user: {
@@ -33,9 +45,15 @@ const userLogin = async (req, res, next) => {
 	const { email, password } = req.body;
 	try {
 		const user = await func.findUserByEmail(email);
+
 		if (!user) {
 			throw HttpError(401, "Email or password is wrong");
 		}
+
+		if (user.verify === false) {
+			throw HttpError(401, "You should verificate your email before login");
+		}
+
 		const isValidPassword = await func.validatePassword(password, user.password);
 		if (!isValidPassword) {
 			throw HttpError(401, "Email or password is wrong");
@@ -70,9 +88,8 @@ const userLogout = async (req, res, next) => {
 };
 
 const userCurrent = async (req, res, next) => {
+	const { token } = req.user;
 	try {
-		const { token } = req.user;
-
 		const user = await func.findUserByToken(token);
 		const { email, subscription } = user;
 
@@ -95,7 +112,7 @@ const userAvatar = async (req, res, next) => {
 
 	try {
 		if (!req.file) {
-			throw HttpError(404, "Not Found");
+			throw HttpError(400, "Bad Request");
 		}
 
 		const { path: tempUpload, originalname } = req.file;
@@ -114,10 +131,55 @@ const userAvatar = async (req, res, next) => {
 	}
 };
 
+const userVerification = async (req, res, next) => {
+	const { verificationToken } = req.params;
+	try {
+		const user = await func.findUserByVerificationToken(verificationToken);
+
+		if (!user) {
+			throw HttpError(404, "Not found");
+		}
+
+		await func.updateVerification(user._id, null, true);
+
+		res.status(200).json({ message: "Verification successful" });
+	} catch (error) {
+		next(error);
+	}
+};
+
+const resendVerification = async (req, res, next) => {
+	const { email } = req.body;
+
+	try {
+		if (!email) {
+			throw HttpError(400, "Missing required field email");
+		}
+
+		const user = await func.findUserByEmail(email);
+
+		if (!user) {
+			throw HttpError(400, "User doesn't exist");
+		}
+
+		if (user.verify === true) {
+			throw HttpError(400, "Verification has already been passed");
+		}
+
+		sendMail(email, user.verificationToken);
+
+		res.status(200).json({ message: "Verification email sent" });
+	} catch (e) {
+		next(e);
+	}
+};
+
 module.exports = {
 	userSignUp,
 	userLogin,
 	userCurrent,
 	userLogout,
 	userAvatar,
+	userVerification,
+	resendVerification,
 };

@@ -13,6 +13,11 @@ const findUserByToken = async (token) => {
 	return user;
 };
 
+const findUserByVerificationToken = async (verificationToken) => {
+	const user = await User.findOne({ verificationToken });
+	return user;
+};
+
 const updateUserWithToken = async (id) => {
 	const { SECRET_KEY } = process.env;
 
@@ -38,7 +43,17 @@ const validatePassword = async (password, hash) => {
 };
 
 const updateUserAvatar = async (id, newAvatar) => {
-	return User.findByIdAndUpdate(id, { avatarURL: newAvatar }, { new: true });
+	const user = User.findByIdAndUpdate(id, { avatarURL: newAvatar }, { new: true });
+	return user;
+};
+
+const updateVerification = async (id, token, verify) => {
+	const updatedVerify = User.findByIdAndUpdate(
+		id,
+		{ verificationToken: token, verify: verify },
+		{ new: true }
+	);
+	return updatedVerify;
 };
 
 module.exports = {
@@ -47,5 +62,7 @@ module.exports = {
 	updateUserWithToken,
 	validatePassword,
 	findUserByToken,
+	findUserByVerificationToken,
 	updateUserAvatar,
+	updateVerification,
 };
